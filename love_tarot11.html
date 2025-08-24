@@ -1,1 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 오늘의 타로 운세 (종합)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap');
 
+        body {
+            font-family: 'Nanum Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            max-width: 650px;
+            width: 90%;
+            transition: all 0.5s ease-in-out;
+            border: 2px solid #6a0dad;
+        }
+        h1 {
+            color: #6a0dad;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .draw-button {
+            background-color: #6a0dad;
+            color: #fff;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 1.5rem;
+            box-shadow: 0 5px 15px rgba(106, 13, 173, 0.4);
+        }
+        .draw-button:hover:not(:disabled) {
+            background-color: #4b0082;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(75, 0, 130, 0.6);
+        }
+        .draw-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .draw-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #result-area {
+            margin-top: 2.5rem;
+            background-color: #f7f3f9;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px dashed #b19cd9;
+            min-height: 200px;
+            text-align: left;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        .card-name {
+            font-family: 'Nanum Gothic', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #6a0dad;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .card-direction {
+            font-size: 1.2rem;
+            color: #888;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4b0082;
+            border-bottom: 2px solid #b19cd9;
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card-meaning {
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: #555;
+        }
+        .yes-no-result {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .yes-no-yes {
+            color: #28a745;
+        }
+        .yes-no-no {
+            color: #dc3545;
+        }
+        .card-selection-area {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            animation: fadeIn 1s forwards;
+        }
+        .tarot-card {
+            font-size: 4rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .tarot-card:hover {
+            transform: scale(1.1);
+        }
+        .shuffle-button {
+            margin-top: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #6a0dad;
+            transition: color 0.3s ease;
+            font-weight: bold;
+        }
+        .shuffle-button:hover {
+            color: #4b0082;
+        }
+        .shuffle-message {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #888;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        /* Shake animation for card shuffling */
+        @keyframes shake {
+            0% { transform: translateX(0) rotate(0); }
+            20% { transform: translateX(-5px) rotate(-3deg); }
+            40% { transform: translateX(5px) rotate(3deg); }
+            60% { transform: translateX(-5px) rotate(-3deg); }
+            80% { transform: translateX(5px) rotate(3deg); }
+            100% { transform: translateX(0) rotate(0); }
+        }
+
+        /* --- 모바일 최적화를 위한 미디어 쿼리 --- */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .draw-button {
+                font-size: 1.1rem;
+                padding: 1rem 2rem;
+                width: 100%; /* 모바일에서 버튼 너비 100%로 설정 */
+                box-sizing: border-box; /* 패딩 포함된 너비 */
+            }
+            .tarot-card {
+                font-size: 3rem; /* 카드 이모지 크기 조절 */
+            }
+            .card-selection-area {
+                gap: 1rem;
+            }
+            #result-area {
+                padding: 1.5rem;
+            }
+            .card-name {
+                font-size: 1.8rem;
+            }
+            .card-direction {
+                font-size: 1rem;
+            }
+            .section-title {
+                font-size: 1.2rem;
+            }
+            .card-meaning, .yes-no-result {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔮 오늘의 타로 운세</h1>
+    <p id="initial-message">아래 버튼을 눌러 카드를 한 장 뽑으세요.</p>
+    <button id="draw-button" class="draw-button" onclick="showCardSelection()">카드 뽑기</button>
+    <div id="card-selection-container" style="display:none;">
+        <p><strong>카드를 선택하세요!</strong></p>
+        <div id="card-selection-area" class="card-selection-area">
+            <span class="tarot-card" onclick="startReading()">🃏</span>
+            <span class="tarot-card" onclick="startReading()">🃏</span>
+            <span class="tarot-card" onclick="startReading()">🃏</span>
+            <span class="tarot-card" onclick="startReading()">🃏</span>
+            <span class="tarot-card" onclick="startReading()">🃏</span>
+        </div>
+        <p id="shuffle-message" style="display: none;">카드를 섞는 중입니다...</p>
+        <button id="shuffle-button" class="shuffle-button" onclick="shuffleCards()">
+            <span style="font-size: 1.5rem;">🔁</span> 카드 다시 섞기
+        </button>
+    </div>
+    <div id="result-area">
+        <p id="message-text" style="text-align: center;">결과가 여기에 표시됩니다.</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        alert("마우스 우클릭은 허용되지 않습니다.");
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12') {
+            e.preventDefault();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+            e.preventDefault();
+        }
+        if (e.ctrlKey && e.key === 'U') {
+            e.preventDefault();
+        }
+    });
+
+    const tarotCards = {
+        '마법사 🧙': {
+            정방향: {
+                meaning: '창조, 의지, 시작. 새로운 계획을 시작하고 자신의 능력을 발휘할 때입니다. 당신의 내면에 숨겨진 잠재력을 믿고 행동에 옮기세요. 기회를 놓치지 마세요. 당신의 창의력이 빛을 발합니다.',
+                loveMeaning: '새로운 사랑이 시작될 수 있습니다. 적극적으로 당신의 매력을 어필하세요. 썸을 타는 관계라면 당신의 솔직한 감정을 표현하는 것이 관계 발전에 큰 도움이 될 것입니다. 당신의 말 한마디가 상대방의 마음을 움직일 수 있어요.',
+                moneyMeaning: '새로운 수입원을 찾거나 투자에 성공할 수 있는 좋은 시기입니다. 당신의 아이디어가 돈을 벌어다 줄 것입니다. 적극적으로 재정 계획을 세우고 실행하세요.',
+                successMeaning: '당신의 창의적인 아이디어가 좋은 결과를 가져올 것입니다. 새로운 프로젝트나 사업을 시작하기에 완벽한 시기입니다. 당신의 능력과 의지가 성공의 열쇠입니다.',
+                healthMeaning: '몸과 마음 모두 활력이 넘칩니다. 새로운 운동이나 건강 습관을 시작하기에 좋은 때입니다. 긍정적인 에너지가 넘쳐나며, 가벼운 질병은 쉽게 극복할 수 있습니다.',
+                studyMeaning: '학습 능력이 최고조에 달합니다. 새로운 지식을 빠르게 습득하고, 창의적인 문제 해결 능력이 돋보입니다. 좋은 성과를 기대해도 좋습니다.',
+                relationshipMeaning: '새로운 만남을 통해 좋은 인맥을 쌓을 수 있습니다. 당신의 매력적인 태도가 주변 사람들에게 좋은 인상을 남길 것입니다. 리더십을 발휘하면 좋은 결과를 얻을 수 있습니다.',
+                yesNo: 'Yes. 긍정적인 시작과 결과가 기대됩니다.'
+            },
+            역방향: {
+                meaning: '무능력, 속임수. 계획이 부족하거나 자신의 능력을 믿지 못하고 있습니다. 자신감을 가지고 철저히 준비해야 합니다. 주변의 유혹이나 속임수에 휘둘리지 않도록 주의하세요.',
+                loveMeaning: '연애 관계에서 오해나 속임수가 있을 수 있습니다. 상대방의 말을 무조건 믿기보다 진실을 확인하는 자세가 필요합니다. 관계에 대한 깊은 고민이 필요하며, 솔직하지 못한 행동이 관계를 해칠 수 있습니다.',
+                moneyMeaning: '재정적으로 불안정한 시기입니다. 무리한 투자나 충동적인 지출은 피하세요. 사기를 당하거나 손해를 볼 수 있으니 신중해야 합니다.',
+                successMeaning: '계획에 차질이 생기거나 목표를 달성하기 어렵습니다. 지금은 새로운 일을 시작하기보다 기존의 것을 재정비하는 시간이 필요합니다. 무리하게 진행하지 마세요.',
+                healthMeaning: '피로를 느끼기 쉽고, 건강 관리에 소홀해질 수 있습니다. 몸의 신호를 무시하지 말고 충분한 휴식을 취하세요. 특히 스트레스 관리에 신경 써야 합니다.',
+                studyMeaning: '학업에 대한 의욕이 떨어지고 집중력이 흐트러질 수 있습니다. 노력에 비해 성과가 나오지 않아 실망할 수도 있습니다. 학습 방법을 재검토하는 것이 필요합니다.',
+                relationshipMeaning: '주변 사람들과의 소통에 문제가 생길 수 있습니다. 당신의 말과 행동이 오해를 불러일으킬 수 있으니 주의하세요. 려와 함께하는 것보다 혼자만의 시간이 필요할 수 있습니다.',
+                yesNo: 'No. 지금은 때가 아닙니다. 재고하고 준비하는 시간이 필요합니다.'
+            }
+        },
+        '연인 ❤️': {
+            정방향: {
+                meaning: '사랑, 관계, 선택. 중요한 선택을 앞두고 있습니다. 마음이 이끄는 대로 결정하면 좋은 결과가 있을 것입니다. 타인과의 관계에서 조화와 균형을 찾는 것이 중요합니다. 당신의 선택이 앞으로의 삶에 긍정적인 영향을 미칠 것입니다.',
+                loveMeaning: '사랑에 있어 매우 긍정적인 시기입니다. 솔로라면 운명적인 만남이 있을 수 있고, 커플이라면 관계가 더욱 깊어질 것입니다. 진정한 사랑을 찾고 유지할 수 있는 기회가 찾아왔습니다. 상대방과의 관계가 한 단계 더 발전할 수 있습니다.',
+                moneyMeaning: '공동 투자나 파트너십을 통해 이익을 얻을 수 있습니다. 혼자보다 함께하는 것이 더 큰 재정적 성공을 가져올 것입니다. 중요한 계약을 앞두고 있다면 좋은 결과를 기대할 수 있습니다.',
+                successMeaning: '협력과 소통을 통해 성공에 한 발짝 더 다가갈 수 있습니다. 팀 프로젝트나 동업 관계에서 긍정적인 결과를 얻을 것입니다. 중요한 결정을 내리기에 좋은 시기입니다.',
+                healthMeaning: '정신적으로 안정되고, 몸과 마음의 균형이 잘 맞습니다. 심리적인 안정감이 신체적인 활력으로 이어집니다. 컨디션이 좋아 새로운 도전을 할 수 있습니다.',
+                studyMeaning: '스터디 그룹이나 팀 프로젝트를 통해 좋은 결과를 얻을 수 있습니다. 혼자 공부하기보다 다른 사람들과 함께하면 시너지가 발생합니다. 어려운 문제도 함께 해결할 수 있을 것입니다.',
+                relationshipMeaning: '대인관계가 매우 원만하고 조화로운 시기입니다. 주변 사람들과의 관계가 더욱 돈독해지고, 새로운 좋은 인연을 만날 수 있습니다. 갈등이 있다면 대화를 통해 원만하게 해결될 것입니다.',
+                yesNo: 'Yes. 좋은 관계와 조화를 통해 긍정적인 답을 얻을 수 있습니다.'
+            },
+            역방향: {
+                meaning: '불화, 갈등. 관계에서 오해가 생기거나 중요한 선택을 피하고 있습니다. 갈등을 직시하고 해결하려 노력하세요. 자신의 가치관을 명확히 하고 후회 없는 결정을 내리세요. 망설임이 상황을 더욱 악화시킬 수 있습니다.',
+                loveMeaning: '연인과의 갈등이나 불화가 생길 수 있습니다. 관계에 대한 회의감이 들거나 제3자의 개입으로 인해 관계가 복잡해질 수 있으니 주의하세요. 진솔한 대화와 서로에 대한 신뢰 회복이 시급합니다.',
+                moneyMeaning: '금전적인 문제로 인해 파트너와 다툼이 생길 수 있습니다. 공동 투자나 계약은 신중하게 검토해야 합니다. 잘못된 판단으로 인해 재정적 손실을 볼 수 있습니다.',
+                successMeaning: '협력 관계에 문제가 생겨 프로젝트가 지연되거나 실패할 수 있습니다. 중요한 결정을 내리기 전에 모든 가능성을 신중하게 고려하세요. 갈등이 해결되지 않으면 성공하기 어렵습니다.',
+                healthMeaning: '마음의 불안정이 신체적인 문제로 이어질 수 있습니다. 스트레스나 불면증에 시달리기 쉽습니다. 몸과 마음의 균형을 되찾으려는 노력이 필요합니다.',
+                studyMeaning: '공부나 시험에 대한 갈등으로 인해 집중이 어려울 수 있습니다. 여러 선택지 앞에서 방황하거나, 함께하는 사람들과의 불화로 인해 학습에 지장이 생길 수 있습니다.',
+                relationshipMeaning: '대인관계에서 불화와 갈등이 예상됩니다. 오해나 의견 차이로 인해 주변 사람들과 멀어질 수 있습니다. 특히 관계를 결정해야 하는 중요한 순간에 신중해야 합니다.',
+                yesNo: 'No. 갈등이 해결되지 않으면 원하는 답을 얻기 어렵습니다.'
+            }
+        },
+        '힘 💪': {
+            정방향: {
+                meaning: '용기, 인내. 내면의 힘과 용기를 발휘할 때입니다. 부드러움과 자비심으로 상황을 통제할 수 있습니다. 힘은 육체적인 것이 아닌 정신적인 강인함에서 나옵니다. 어려운 상황에 부딪히더라도 긍정적인 태도로 극복할 수 있습니다.',
+                loveMeaning: '연애에서 당신의 인내심과 포용력이 빛을 발할 때입니다. 상대를 이해하고 부드러운 태도로 다가가면 관계가 더욱 단단해집니다. 당신의 내면의 힘이 사랑을 지켜줄 것입니다. 어려운 시기를 함께 극복하며 더 깊은 유대감을 형성할 수 있습니다.',
+                moneyMeaning: '자신의 능력과 인내심으로 재정적인 어려움을 극복할 수 있습니다. 꾸준한 노력으로 수입을 늘리거나 투자 목표를 달성할 수 있습니다. 지출을 통제하고 절약하는 습관이 중요합니다.',
+                successMeaning: '당신의 끈기와 용기가 결실을 맺을 것입니다. 어려운 프로젝트를 맡고 있다면, 당신의 인내심으로 성공적인 결과를 이끌어낼 수 있습니다. 포기하지 않고 꾸준히 노력하면 좋은 성과가 있을 것입니다.',
+                healthMeaning: '정신적인 힘이 신체적인 건강을 지켜줍니다. 어려운 치료나 회복 과정에 있다면, 당신의 강한 의지로 극복할 수 있습니다. 꾸준한 관리가 중요합니다.',
+                studyMeaning: '어렵고 복잡한 학업 과제도 포기하지 않고 끈기있게 해결할 수 있습니다. 인내심을 갖고 꾸준히 노력하면 결국 좋은 결과를 얻게 됩니다.',
+                relationshipMeaning: '당신의 인내심과 포용력이 빛을 발합니다. 주변 사람들의 어려움을 이해하고 감싸줄 수 있어, 관계가 더욱 깊어집니다. 당신의 존재가 주변 사람들에게 큰 힘이 될 것입니다.',
+                yesNo: 'Yes. 당신의 의지와 힘으로 충분히 극복하고 성공할 수 있습니다.'
+            },
+            역방향: {
+                meaning: '무력함, 자신감 부족. 자신감을 잃고 상황에 압도당하고 있습니다. 잠시 쉬어가며 마음의 안정을 찾아야 합니다. 주변 사람들에게 도움을 요청하는 것도 좋은 방법입니다. 자신의 한계를 인정하고, 잠시 멈춰서 재정비하는 시간이 필요합니다.',
+                loveMeaning: '연애에 대한 자신감이 부족하거나 관계에서 무력함을 느낄 수 있습니다. 스스로를 탓하기보다 솔직하게 마음을 털어놓고 재충전하는 시간을 가지세요. 상대방에 대한 집착이나 통제하려는 마음을 버려야 합니다.',
+                moneyMeaning: '재정적으로 불안정한 시기입니다. 무리한 투자나 충동적인 지출은 피하세요. 사기를 당하거나 손해를 볼 수 있으니 신중해야 합니다.',
+                successMeaning: '목표에 대한 의지가 약해져 실패할 수 있습니다. 자신감을 잃고 포기하기 쉽습니다. 지금은 새로운 일을 시작하기보다 기존의 것을 재정비하는 시간이 필요합니다. 무리하게 진행하지 마세요.',
+                healthMeaning: '피로를 느끼기 쉽고, 건강 관리에 소홀해질 수 있습니다. 몸의 신호를 무시하지 말고 충분한 휴식을 취하세요. 특히 스트레스 관리에 신경 써야 합니다.',
+                studyMeaning: '학업에 대한 의욕이 떨어지고 집중력이 흐트러질 수 있습니다. 노력에 비해 성과가 나오지 않아 실망할 수도 있습니다. 학습 방법을 재검토하는 것이 필요합니다.',
+                relationshipMeaning: '주변 사람들과의 소통에 문제가 생길 수 있습니다. 당신의 말과 행동이 오해를 불러일으킬 수 있으니 주의하세요. 려와 함께하는 것보다 혼자만의 시간이 필요할 수 있습니다.',
+                yesNo: 'No. 지금은 때가 아닙니다. 재고하고 준비하는 시간이 필요합니다.'
+            }
+        },
+        '운명의 수레바퀴 🎡': {
+            정방향: {
+                meaning: '행운, 전환, 변화. 당신의 삶에 긍정적인 변화와 행운이 찾아올 것입니다. 뜻밖의 기회가 올 수 있으니 마음을 열고 받아들이세요. 운명의 흐름을 타세요! 당신의 삶에 새로운 장이 열릴 준비가 되어 있습니다.',
+                loveMeaning: '운명적인 만남이나 관계의 전환점이 찾아옵니다. 솔로라면 우연한 기회에 이상형을 만날 수 있고, 커플이라면 새로운 행복을 맞이하게 될 것입니다. 관계에 활력을 불어넣을 기회가 올 것입니다.',
+                moneyMeaning: '뜻밖의 횡재나 재정적인 행운이 찾아올 수 있습니다. 투기성 투자가 성공할 가능성이 높으며, 예상치 못한 수입이 생길 수 있습니다. 좋은 기회를 놓치지 마세요.',
+                successMeaning: '당신의 삶에 긍정적인 변화와 성공의 기회가 찾아올 것입니다. 우연한 만남이나 예상치 못한 일 덕분에 목표를 달성할 수 있습니다. 운명의 흐름을 타면 성공은 자연스럽게 따라올 것입니다.',
+                healthMeaning: '건강이 전반적으로 호전되고 활력을 되찾을 것입니다. 운이 따라주는 시기이므로, 건강 문제가 있었다면 좋은 의사를 만나거나 적절한 치료법을 찾게 될 수 있습니다.',
+                studyMeaning: '학업에 있어 뜻밖의 행운이 따릅니다. 중요한 시험에서 운이 좋게 답을 맞히거나, 좋은 스승을 만나 실력이 급상승할 수 있습니다.',
+                relationshipMeaning: '새로운 만남이나 관계의 전환점이 찾아옵니다. 우연한 기회에 좋은 인연을 만나거나, 기존의 관계가 긍정적으로 발전할 수 있습니다. 당신의 운명을 바꿔줄 사람을 만날 수 있습니다.',
+                yesNo: 'Yes. 운명적인 기회가 당신을 돕고 있습니다.'
+            },
+            역방향: {
+                meaning: '불운, 정체, 예상치 못한 변화. 현재 상황이 불만족스럽거나 예상치 못한 장애물에 부딪힐 수 있습니다. 지금은 흐름을 바꾸기보다 잠시 멈춰서 상황을 관찰하는 것이 좋습니다. 운에 기대기보다 스스로 문제를 해결하려는 노력이 필요합니다.',
+                loveMeaning: '연애운에 불운이 따를 수 있습니다. 예상치 못한 문제로 관계가 정체되거나, 꼬여버릴 수 있습니다. 잠시 관계에 대한 기대감을 내려놓고, 다음 기회를 기다리는 것이 현명합니다. 서두르면 일을 그르칠 수 있습니다.',
+                moneyMeaning: '재정적인 손실을 겪을 수 있습니다. 예상치 못한 지출이나 투자 실패로 인해 어려움에 처할 수 있습니다. 투기는 피하고, 재정 계획을 신중하게 세워야 합니다.',
+                successMeaning: '계획이 틀어지거나 예상치 못한 장애물로 인해 목표 달성이 지연될 수 있습니다. 지금은 무리하게 상황을 바꾸려 하지 말고, 잠시 멈춰서 상황을 재점검하는 시간이 필요합니다.',
+                healthMeaning: '건강이 악화되거나 예상치 못한 질병에 걸릴 수 있습니다. 건강을 과신하지 말고, 정기적인 검진과 관리에 신경 써야 합니다.',
+                studyMeaning: '학업에 있어 불운이 따릅니다. 노력한 만큼의 결과가 나오지 않거나, 시험에서 실수를 할 수 있습니다. 지금은 운에 맡기기보다 부족한 부분을 보완하는 데 집중해야 합니다.',
+                relationshipMeaning: '대인관계에서 뜻밖의 문제나 갈등이 생길 수 있습니다. 관계가 정체되거나, 잘못된 만남으로 인해 어려움을 겪을 수 있으니 새로운 사람을 만날 때는 신중해야 합니다.',
+                yesNo: 'No. 흐름이 당신에게 불리합니다. 잠시 멈추세요.'
+            }
+        },
+        '탑 ⚡️': {
+            정방향: {
+                meaning: '파괴, 갑작스러운 변화, 혼란. 당신의 삶에 충격적인 사건이나 갑작스러운 변화가 일어날 수 있습니다. 이는 기존의 것을 무너뜨리고 새로운 시작을 위한 필수적인 과정입니다. 용기를 내어 변화에 맞서세요. 이 위기가 오히려 새로운 기회를 가져다줄 수 있습니다.',
+                loveMeaning: '현재의 연애 관계에 큰 변화가 닥칠 수 있습니다. 이별, 다툼 등 충격적인 사건이 발생할 수 있지만, 이는 더 나은 관계를 위한 재정비의 시간이 될 수도 있습니다. 변화를 두려워하지 마세요. 솔직한 마음을 드러내고 관계의 본질을 돌아볼 필요가 있습니다.',
+                moneyMeaning: '재정적인 위기가 닥칠 수 있습니다. 갑작스러운 손실이나 예상치 못한 지출이 발생할 수 있습니다. 모든 것을 잃을 수 있다는 생각으로 대비해야 합니다. 지금은 위험한 투자를 절대 피하세요.',
+                successMeaning: '당신의 모든 계획이 무너질 수 있는 위기 상황입니다. 사업 실패, 해고 등 충격적인 변화가 올 수 있습니다. 하지만 이는 기존의 잘못된 틀을 깨고 새로운 기회를 만들 수 있는 계기가 될 것입니다.',
+                healthMeaning: '갑작스러운 사고나 질병으로 인해 건강에 문제가 생길 수 있습니다. 무리한 활동은 피하고, 안전에 각별히 신경 써야 합니다. 건강 검진을 받아보는 것이 좋습니다.',
+                studyMeaning: '학업이나 시험에 있어 큰 좌절을 겪을 수 있습니다. 실패를 통해 새로운 깨달음을 얻고, 다시 시작할 용기를 내야 합니다. 기존의 학습 방식이 잘못되었을 수 있습니다.',
+                relationshipMeaning: '주변 사람들과의 관계에 큰 변화가 닥칠 수 있습니다. 갑작스러운 다툼이나 절교를 경험할 수 있습니다. 관계의 본질을 돌아보고, 불필요한 관계를 정리하는 시기가 될 수 있습니다.',
+                yesNo: 'No. 충격적인 결과가 예상되니 신중해야 합니다.'
+            },
+            역방향: {
+                meaning: '불안정, 재앙의 회피, 불안. 변화가 일어나기 직전의 불안감이나 혼란을 느끼고 있습니다. 변화를 억지로 피하려 하기보다, 새로운 가능성을 위해 스스로 변화를 시도하는 것이 필요합니다. 내면의 불안을 해소하고 안정감을 찾는 것이 우선입니다.',
+                loveMeaning: '연인과의 관계가 위태롭거나 불안정한 상태입니다. 문제점을 외면하기보다 정면으로 마주하고 해결하려는 노력이 필요합니다. 억지로 관계를 유지하기보다, 서로에게 솔직해지는 것이 더 중요합니다.',
+                moneyMeaning: '재정적인 위기를 가까스로 모면하거나, 손실이 예상보다 적을 수 있습니다. 그러나 여전히 불안정한 상태이므로, 신중한 재정 관리가 필요합니다. 위험을 피하려는 노력이 중요합니다.',
+                successMeaning: '예상치 못한 실패나 위기를 간신히 피할 수 있지만, 여전히 불안정한 상태입니다. 문제의 원인을 파악하고, 스스로 변화를 시도해야 합니다. 억지로 현상 유지만 하려다 더 큰 위기에 빠질 수 있습니다.',
+                healthMeaning: '예상치 못한 건강 문제가 있었으나, 큰 어려움 없이 넘길 수 있습니다. 그러나 여전히 불안한 상태이므로, 지속적인 건강 관리가 필요합니다.',
+                studyMeaning: '시험이나 학업에서 큰 실패를 경험하지는 않지만, 불안한 결과를 얻을 수 있습니다. 불안감을 해소하고 안정적으로 공부하기 위한 노력이 필요합니다.',
+                relationshipMeaning: '관계의 위기를 겪고 있지만, 큰 문제 없이 넘어갈 수 있습니다. 그러나 관계의 근본적인 불안정성이 해결된 것은 아니므로, 진정한 소통과 노력이 필요합니다.',
+                yesNo: 'Maybe. 상황이 불안정하지만, 노력에 따라 결과가 달라질 수 있습니다.'
+            }
+        },
+        '달 🌙': {
+            정방향: {
+                meaning: '혼란, 불안, 착각. 당신의 마음속에 두려움이나 불안이 자리하고 있습니다. 현실과 상상을 구분하기 어렵고, 누군가 당신을 속이고 있을 수도 있습니다. 직감을 믿고 신중하게 행동하세요. 지금은 확실한 길을 찾기 어렵습니다.',
+                loveMeaning: '사랑에 대한 확신이 없고, 상대방의 진심을 알기 어렵습니다. 관계에 대해 불안감을 느낄 수 있으며, 현실과 이상을 혼동하지 않도록 주의해야 합니다. 상대방의 말을 맹신하기보다 진실을 확인하는 지혜가 필요합니다.',
+                moneyMeaning: '재정 상황이 불투명합니다. 사기를 당하거나 투자에 대한 잘못된 정보로 손해를 볼 수 있습니다. 확실하지 않은 제안은 거절하는 것이 현명합니다. 지금은 돈과 관련된 중요한 결정을 피해야 합니다.',
+                successMeaning: '목표가 불분명해지거나, 프로젝트 진행에 혼란이 올 수 있습니다. 주변에 당신을 속이려 하는 사람이 있을 수 있으니 경계해야 합니다. 현실을 똑바로 보고, 모호한 상황을 명확히 하는 노력이 필요합니다.',
+                healthMeaning: '정신적인 불안감이 신체적인 문제로 이어질 수 있습니다. 불면증, 우울증 등 심리적인 어려움을 겪기 쉽습니다. 마음의 안정을 찾는 것이 건강을 위한 우선순위입니다.',
+                studyMeaning: '공부나 시험에 대한 불안감으로 인해 집중하기 어렵습니다. 잘못된 정보에 현혹되거나, 비현실적인 목표를 세울 수 있습니다. 현실적인 계획을 세우는 것이 중요합니다.',
+                relationshipMeaning: '대인관계에서 오해나 불안이 생길 수 있습니다. 상대방의 진짜 의도를 파악하기 어렵거나, 자신도 모르게 거짓말을 할 수 있습니다. 솔직한 소통과 진실을 찾는 노력이 필요합니다.',
+                yesNo: 'No. 상황이 불분명하고 속임수가 있을 수 있습니다.'
+            },
+            역방향: {
+                meaning: '속임수의 폭로, 불안의 극복. 오해나 숨겨져 있던 진실이 드러날 때입니다. 내면의 두려움을 극복하고 앞으로 나아갈 힘을 얻게 됩니다. 이제 혼란을 딛고 명확한 길을 찾을 수 있습니다. 혼란스러웠던 상황이 해결될 기미를 보입니다.',
+                loveMeaning: '연애 관계의 오해가 풀리고 진실을 알게 됩니다. 혼란스러웠던 마음이 안정되고, 상대방과의 관계에서 더 명확한 길을 찾을 수 있습니다. 솔직한 대화를 통해 서로의 진심을 확인하게 될 것입니다.',
+                moneyMeaning: '재정적인 문제의 원인이 밝혀지거나, 숨겨져 있던 돈이 발견될 수 있습니다. 그동안의 불안감이 해소되고, 재정적으로 안정감을 되찾게 됩니다.',
+                successMeaning: '그동안 당신을 괴롭혔던 문제의 원인이 드러나고, 목표를 향한 길이 명확해집니다. 혼란이 사라지고, 자신감을 되찾아 성공에 다가설 수 있습니다. 그동안의 노력이 빛을 발할 것입니다.',
+                healthMeaning: '그동안 당신을 괴롭혔던 정신적 불안이 해소되고 건강을 되찾을 수 있습니다. 원인을 알고 치료하면 빠르게 회복될 것입니다. 마음이 편해지면서 몸도 가벼워집니다.',
+                studyMeaning: '오랫동안 해결하지 못했던 문제의 답을 찾거나, 올바른 학습 방법을 깨닫게 됩니다. 혼란이 걷히고 학업에 대한 자신감을 회복할 수 있습니다.',
+                relationshipMeaning: '대인관계의 오해가 풀리고, 숨겨져 있던 진실을 알게 됩니다. 혼란스러웠던 관계가 명확해지고, 진정한 친구와 가짜 친구를 구분할 수 있게 됩니다.',
+                yesNo: 'Yes. 혼란이 걷히고 원하는 답을 찾을 수 있습니다.'
+            }
+        },
+        '정의 ⚖️': {
+            정방향: {
+                meaning: '정의, 공정함, 진실. 당신의 결정과 행동에 공정함과 진실이 함께할 때입니다. 정의로운 결과를 얻기 위해 정직하고 객관적으로 판단해야 합니다. 과거의 노력에 대한 보상을 받게 될 것입니다. 모든 일에 균형을 잡는 것이 중요합니다.',
+                loveMeaning: '연애 관계에서 공정하고 올바른 결정을 내릴 수 있습니다. 관계에 문제가 있었다면 원인을 파악하고 공정하게 해결할 수 있는 시기입니다. 진실한 사랑을 바탕으로 한 관계는 더욱 단단해질 것입니다. 결혼이나 중요한 약속을 하기에 좋은 때입니다.',
+                moneyMeaning: '정당한 보상을 받거나, 금전적으로 공정한 거래를 할 수 있습니다. 빚을 청산하거나 밀린 돈을 받을 수도 있습니다. 법적 소송이나 계약 문제에서 당신에게 유리한 결과가 나올 것입니다.',
+                successMeaning: '당신의 노력이 정당하게 인정받을 것입니다. 승진, 보너스, 또는 시험 합격 등 정직한 노력에 대한 보상이 있을 것입니다. 공정한 경쟁을 통해 성공을 쟁취할 수 있습니다.',
+                healthMeaning: '몸과 마음의 균형이 잘 잡혀 건강합니다. 올바른 생활 습관을 유지하고, 몸이 보내는 신호에 귀 기울이면 좋은 상태를 유지할 수 있습니다. 특히, 건강에 관련된 법적 문제나 치료에 좋은 결과가 있을 것입니다.',
+                studyMeaning: '노력에 대한 정당한 평가를 받습니다. 시험 결과나 논문 평가에서 좋은 점수를 얻고, 자신의 실력이 공정하게 인정받을 것입니다. 학업에서 균형을 잡는 것이 중요합니다.',
+                relationshipMeaning: '공정하고 진실된 관계를 유지할 수 있습니다. 당신의 솔직함과 정직함이 주변 사람들에게 좋은 인상을 줍니다. 불필요한 논쟁은 피하고, 서로의 의견을 존중하면 좋은 관계를 만들 수 있습니다.',
+                yesNo: 'Yes. 공정한 판단이 좋은 결과를 가져옵니다.'
+            },
+            역방향: {
+                meaning: '불공정, 편견, 부정의. 편견이나 잘못된 판단으로 인해 불공정한 결과를 초래할 수 있습니다. 자신의 행동을 돌아보고 객관적인 시각을 가져야 합니다. 잘못된 결정으로 인해 어려움을 겪을 수 있으니 신중해야 합니다.',
+                loveMeaning: '연애 관계에서 불공평함을 느끼거나, 오해로 인해 갈등이 심해질 수 있습니다. 상대방을 비난하기보다 자신의 편견은 없는지 돌아보세요. 일방적인 관계는 오래가지 못합니다. 서로 동등한 입장에서 문제를 해결해야 합니다.',
+                moneyMeaning: '금전적으로 불공평한 상황에 처할 수 있습니다. 불합리한 거래나 계약으로 손해를 볼 수 있으니 주의해야 합니다. 횡령이나 사기 등 부당한 일에 휘말릴 수 있으니 경계하세요.',
+                successMeaning: '불공정한 경쟁이나 편견으로 인해 노력에 대한 정당한 보상을 받지 못할 수 있습니다. 자신의 잘못된 판단으로 인해 실패할 수도 있습니다. 지금은 성과에 연연하기보다 공정한 원칙을 지키는 것이 중요합니다.',
+                healthMeaning: '몸과 마음의 균형이 깨져 건강이 악화될 수 있습니다. 부적절한 식습관이나 생활 습관이 원인이 될 수 있으니, 스스로를 돌아보고 개선하려는 노력이 필요합니다. 건강 관련 법적 문제가 발생할 수 있습니다.',
+                studyMeaning: '시험이나 과제에서 불합리한 평가를 받거나, 노력한 만큼의 결과를 얻지 못할 수 있습니다. 편법을 쓰려 하기보다 정직한 태도로 임하는 것이 중요합니다.',
+                relationshipMeaning: '대인관계에서 불공평한 상황을 겪거나, 당신의 진심이 왜곡되어 전달될 수 있습니다. 감정적으로 행동하기보다 이성적으로 문제를 해결하려 노력하세요. 불필요한 소송이나 법적 문제에 휘말리지 않도록 주의해야 합니다.',
+                yesNo: 'No. 불공정한 상황이 예상되니 재고해야 합니다.'
+            }
+        },
+        '별 ✨': {
+            정방향: {
+                meaning: '희망, 영감, 치유. 당신의 앞길에 희망의 빛이 비추고 있습니다. 어려운 시기를 겪었다면 이제 치유와 회복의 시간이 찾아옵니다. 긍정적인 마음을 가지고 미래를 향해 나아가세요. 당신의 꿈과 목표가 현실이 될 수 있습니다.',
+                loveMeaning: '사랑에 대한 희망이 샘솟는 시기입니다. 솔로라면 새로운 사람을 만나게 될 좋은 기회가 찾아오고, 커플이라면 서로에게 깊은 영감을 주며 관계가 더욱 아름다워질 것입니다. 순수한 마음으로 사랑을 키워나가세요. 당신의 소망이 이루어질 수 있습니다.',
+                moneyMeaning: '재정적인 어려움이 해결되고 회복될 것입니다. 뜻밖의 수입이 생기거나 재정적인 부담이 줄어들 수 있습니다. 희망을 잃지 않으면 재정적으로 안정될 것입니다.',
+                successMeaning: '오랫동안 염원했던 목표에 대한 희망이 생깁니다. 새로운 아이디어나 영감을 얻어 성공의 길을 찾을 수 있습니다. 당신의 노력이 헛되지 않았음을 알게 될 것입니다.',
+                healthMeaning: '건강이 회복되고 몸과 마음이 치유되는 시기입니다. 만성 질환이 있었다면 차도를 보이고, 정신적인 스트레스도 줄어듭니다. 몸을 돌보고 충분한 휴식을 취하면 더욱 좋아집니다.',
+                studyMeaning: '학업에 대한 열정이 되살아나고, 새로운 영감을 얻어 학습 효율이 높아집니다. 어려운 과목에 대한 희망을 가질 수 있으며, 노력한 만큼 좋은 결과가 있을 것입니다.',
+                relationshipMeaning: '대인관계에서 희망을 찾고 치유되는 시기입니다. 상처받았던 마음이 회복되고, 새로운 사람들과 긍정적인 관계를 맺을 수 있습니다. 당신의 순수한 마음이 주변 사람들에게 좋은 영향을 줄 것입니다.',
+                yesNo: 'Yes. 희망과 긍정적인 에너지가 당신을 돕습니다.'
+            },
+            역방향: {
+                meaning: '절망, 희망 상실, 불운. 당신의 마음이 절망적이거나 미래에 대한 희망을 잃고 있습니다. 현실을 외면하기보다 직시하고, 작은 희망의 불씨라도 찾아보려 노력해야 합니다. 비관적인 태도가 상황을 더욱 악화시킬 수 있습니다.',
+                loveMeaning: '연애 관계에서 실망하거나 희망을 잃을 수 있습니다. 상대방에게 기대했던 모습이 아니거나 관계가 더 이상 나아지지 않는다고 느낄 수 있습니다. 잠시 쉬어가며 자신의 마음을 먼저 돌아보는 시간이 필요합니다.',
+                moneyMeaning: '재정적인 문제로 인해 절망감을 느낄 수 있습니다. 투자에 실패하거나 예상치 못한 손실을 겪을 수 있습니다. 모든 것을 잃은 것 같다고 느낄 수 있으니, 희망을 잃지 않도록 노력해야 합니다.',
+                successMeaning: '성공에 대한 희망을 잃고 포기하기 쉬운 시기입니다. 당신의 노력이 헛수고였다고 느낄 수 있습니다. 실패를 경험하더라도 좌절하지 말고, 다시 일어설 용기를 찾아야 합니다.',
+                healthMeaning: '건강에 대한 희망을 잃거나 몸과 마음이 지쳐있는 시기입니다. 만성적인 피로와 스트레스에 시달리기 쉽습니다. 혼자 고민하기보다 전문가의 도움을 받는 것이 좋습니다.',
+                studyMeaning: '학업에 대한 의욕이 사라지고, 목표 달성이 불가능하다고 느낄 수 있습니다. 학습에 대한 비관적인 태도를 버리고, 다시 시작할 용기를 내는 것이 중요합니다.',
+                relationshipMeaning: '대인관계에서 실망감을 느끼거나, 믿었던 사람에게 배신감을 느낄 수 있습니다. 관계에 대한 희망을 잃지 말고, 당신을 진심으로 생각하는 사람들을 찾아보세요.',
+                yesNo: 'No. 희망을 잃지 말고, 현실을 직시하는 것이 먼저입니다.'
+            }
+        },
+        '태양 ☀️': {
+            정방향: {
+                meaning: '성공, 기쁨, 활력. 당신의 모든 노력에 밝은 햇살이 비추며 성공을 가져다줄 것입니다. 삶에 기쁨과 활력이 넘칩니다. 모든 일이 순조롭게 풀리고 행복을 만끽할 수 있는 때입니다. 자신감을 가지고 앞으로 나아가세요.',
+                loveMeaning: '사랑에 있어 최고의 카드입니다. 솔로라면 새로운 사랑이 시작되고, 그 사랑은 당신에게 큰 기쁨을 가져다줄 것입니다. 커플이라면 관계가 절정에 달하며, 결혼이나 약혼 등 중대한 결정을 하기에 매우 좋습니다. 서로에게 완전한 행복을 가져다줄 것입니다.',
+                moneyMeaning: '재정적으로 큰 성공을 거둘 수 있습니다. 수입이 크게 늘어나거나, 사업이 번창하고, 투자 수익이 극대화될 것입니다. 돈에 대한 걱정 없이 풍요로운 삶을 누릴 수 있습니다.',
+                successMeaning: '당신의 모든 노력이 결실을 맺는 시기입니다. 직장에서의 승진, 사업의 성공, 목표 달성 등 모든 면에서 성공이 보장됩니다. 당신의 능력이 빛을 발하고, 주변 사람들에게 인정을 받을 것입니다.',
+                healthMeaning: '최상의 건강 상태를 유지하고 있습니다. 활력이 넘치고, 에너지가 충만하여 무엇이든 해낼 수 있습니다. 신체적, 정신적 건강 모두 매우 좋습니다.',
+                studyMeaning: '학업에서 최고의 성과를 얻을 수 있습니다. 노력한 만큼 좋은 결과가 따르고, 자신의 재능을 발견하게 될 것입니다. 시험 합격이나 논문 통과 등 기쁜 소식이 있을 것입니다.',
+                relationshipMeaning: '대인관계에서 큰 기쁨과 행복을 느낄 수 있습니다. 당신의 긍정적인 에너지가 주변 사람들에게 좋은 영향을 줍니다. 새로운 사람들과의 만남이 활력을 불어넣고, 기존 관계도 매우 밝고 긍정적으로 발전합니다.',
+                yesNo: 'Yes. 가장 강력한 긍정의 카드입니다. 모든 일이 잘 풀릴 것입니다.'
+            },
+            역방향: {
+                meaning: '불행, 지연, 거짓된 성공. 성공에 대한 기대를 너무 크게 가지면 실망할 수 있습니다. 작은 장애물이 생기거나 일이 지연될 수 있습니다. 자신감 부족이나 지나친 욕심이 실패의 원인이 될 수 있으니 주의해야 합니다.',
+                loveMeaning: '연애 관계에서 예상치 못한 문제가 발생하거나 관계에 만족감을 느끼지 못할 수 있습니다. 사소한 오해로 인해 불화가 생길 수 있습니다. 관계를 돌아보고 진실된 마음으로 다가가야 합니다.',
+                moneyMeaning: '재정적인 성공이 지연되거나 기대에 미치지 못할 수 있습니다. 돈을 벌 기회를 놓치거나, 예상치 못한 손실이 발생할 수 있습니다. 과도한 욕심을 부리지 말고 현실을 직시해야 합니다.',
+                successMeaning: '성공이 눈앞에 있는 듯 보이지만, 예상치 못한 문제로 인해 좌절을 겪을 수 있습니다. 성과에 대한 기대치를 낮추고, 실패의 원인을 분석하여 다시 시도해야 합니다. 조급하게 굴지 마세요.',
+                healthMeaning: '건강을 과신하다가 작은 문제를 놓칠 수 있습니다. 지나친 활력으로 인해 무리하면 오히려 건강을 해칠 수 있으니, 페이스 조절이 중요합니다.',
+                studyMeaning: '학업 성취가 기대에 미치지 못할 수 있습니다. 노력은 했지만 결과가 지연되거나, 사소한 실수로 좋은 결과를 놓칠 수 있으니 신중해야 합니다.',
+                relationshipMeaning: '주변 사람들과의 관계에 문제가 생길 수 있습니다. 당신의 자신감이 자만으로 비춰지거나, 당신이 중심이 되고 싶다는 욕심 때문에 갈등이 생길 수 있습니다.',
+                yesNo: 'Maybe. 예상치 못한 문제로 지연될 수 있으니 신중하세요.'
+            }
+        }
+    };
+
+    function showTarotResult() {
+        const resultArea = document.getElementById('result-area');
+        
+        const cardNames = Object.keys(tarotCards);
+        const chosenCardName = cardNames[Math.floor(Math.random() * cardNames.length)];
+        const chosenCard = tarotCards[chosenCardName];
+        
+        const direction = Math.random() < 0.5 ? '정방향' : '역방향';
+        
+        const generalMeaning = chosenCard[direction].meaning;
+        const loveMeaning = chosenCard[direction].loveMeaning;
+        const moneyMeaning = chosenCard[direction].moneyMeaning;
+        const successMeaning = chosenCard[direction].successMeaning;
+        const healthMeaning = chosenCard[direction].healthMeaning;
+        const studyMeaning = chosenCard[direction].studyMeaning;
+        const relationshipMeaning = chosenCard[direction].relationshipMeaning;
+        const yesNoResult = chosenCard[direction].yesNo;
+
+        let yesNoClass = '';
+        if (yesNoResult.startsWith('Yes')) {
+            yesNoClass = 'yes-no-yes';
+        } else if (yesNoResult.startsWith('No')) {
+            yesNoClass = 'yes-no-no';
+        }
+        
+        resultArea.innerHTML = `
+            <div class="card-name">${chosenCardName}</div>
+            <div class="card-direction">${direction}</div>
+            
+            <div class="section-title">일반 해석</div>
+            <div class="card-meaning">
+                ${generalMeaning}
+            </div>
+
+            <div class="section-title">연애운</div>
+            <div class="card-meaning">
+                ${loveMeaning}
+            </div>
+            
+            <div class="section-title">금전운</div>
+            <div class="card-meaning">
+                ${moneyMeaning}
+            </div>
+            
+            <div class="section-title">성공운</div>
+            <div class="card-meaning">
+                ${successMeaning}
+            </div>
+            
+            <div class="section-title">건강운</div>
+            <div class="card-meaning">
+                ${healthMeaning}
+            </div>
+
+            <div class="section-title">학업/시험운</div>
+            <div class="card-meaning">
+                ${studyMeaning}
+            </div>
+
+            <div class="section-title">대인관계운</div>
+            <div class="card-meaning">
+                ${relationshipMeaning}
+            </div>
+            
+            <div class="yes-no-result ${yesNoClass}">
+                <p><strong>[Yes or No]</strong><br>${yesNoResult}</p>
+            </div>
+        `;
+    }
+
+    function showCardSelection() {
+        const drawButton = document.getElementById('draw-button');
+        const initialMessage = document.getElementById('initial-message');
+        const cardSelectionContainer = document.getElementById('card-selection-container');
+        const resultArea = document.getElementById('result-area');
+        
+        drawButton.style.display = 'none';
+        initialMessage.style.display = 'none';
+        resultArea.style.opacity = 0;
+        cardSelectionContainer.style.display = 'block';
+    }
+
+    function shuffleCards() {
+        const shuffleMessage = document.getElementById('shuffle-message');
+        const cardSelectionArea = document.getElementById('card-selection-area');
+        const shuffleButton = document.getElementById('shuffle-button');
+
+        shuffleButton.disabled = true;
+        shuffleMessage.style.display = 'block';
+
+        cardSelectionArea.style.animation = 'none';
+        setTimeout(() => {
+            cardSelectionArea.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite';
+        }, 10);
+        
+        setTimeout(() => {
+            shuffleMessage.style.display = 'none';
+            cardSelectionArea.style.animation = 'none';
+            shuffleButton.disabled = false;
+        }, 2000);
+    }
+
+    function startReading() {
+        const cardSelectionContainer = document.getElementById('card-selection-container');
+        const resultArea = document.getElementById('result-area');
+
+        cardSelectionContainer.style.display = 'none';
+        
+        resultArea.innerHTML = `<p id="message-text" style="text-align: center;">타로카드 확인하는 중...</p>`;
+        resultArea.style.opacity = 1;
+
+        setTimeout(() => {
+            resultArea.innerHTML = `<p id="message-text" style="text-align: center;">타로카드 해석하는 중...</p>`;
+        }, 2000);
+
+        setTimeout(() => {
+            resultArea.style.animation = 'fadeIn 1s forwards';
+            showTarotResult();
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>
