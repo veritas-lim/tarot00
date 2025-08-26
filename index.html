@@ -53,7 +53,7 @@
             margin-bottom: 1rem;
             text-shadow: 0 0 15px rgba(155, 89, 182, 0.7);
         }
-        #initial-message, #card-selection-container > p {
+        #initial-message, #card-selection-container > p, #topic-selection-container > p {
              font-size: 1.1rem;
              color: var(--text-muted);
              margin-bottom: 2rem;
@@ -86,6 +86,32 @@
             transform: none;
             box-shadow: none;
         }
+
+        /* [추가] 주제 선택 버튼 스타일 */
+        .topic-buttons-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .topic-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .topic-button:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+        }
+
         #result-area {
             margin-top: 2.5rem;
             background-color: rgba(36, 59, 85, 0.7);
@@ -135,16 +161,16 @@
             color: var(--text-color);
         }
         .yes-no-result {
-            font-size: 1.2rem; /* 글자 크기 조정 */
+            font-size: 1.2rem;
             font-weight: bold;
             margin-top: 3rem;
             text-align: center;
-            padding: 1.2rem; /* 패딩 조정 */
+            padding: 1.2rem;
             border-radius: 15px;
             background-color: rgba(20, 30, 48, 0.5);
         }
         .yes-no-result strong {
-            font-size: 1rem; /* 'Yes or No' 타이틀 크기 조정 */
+            font-size: 1rem;
             display: block;
             margin-bottom: 0.5rem;
             color: var(--text-muted);
@@ -224,15 +250,25 @@
             body { padding: 1rem 0; }
             .container { padding: 2rem 1.5rem; }
             h1 { font-size: 2rem; }
-            #initial-message, #card-selection-container > p { font-size: 1rem; }
+            #initial-message, #card-selection-container > p, #topic-selection-container > p { font-size: 1rem; }
             
             .action-button { width: 100%; padding: 0.9rem 2rem; font-size: 1.1rem; }
-            .tarot-card { font-size: 3.5rem; width: calc(33.33% - 0.8rem); gap: 0.8rem; }
             
-            /* [수정] 결과창 좌우 여백 조정 */
+            /* [수정] 주제 선택 버튼 모바일 스타일 */
+            .topic-buttons-wrapper { grid-template-columns: 1fr 1fr; }
+            .topic-button { padding: 1rem; font-size: 1rem; }
+            
+            /* [수정] 카드 선택 영역 모바일 스타일 (가로 5장) */
+            .card-selection-area {
+                gap: 0.5rem;
+            }
+            .tarot-card { 
+                font-size: 2.8rem; 
+                width: calc(20% - 0.5rem); 
+                padding: 0.3rem; 
+            }
+            
             #result-area { padding: 2rem 1rem; }
-
-            /* [수정] 결과창 제목(카드이름) 스타일 조정 */
             .card-name { 
                 font-size: 1.7rem; 
                 line-height: 1.3; 
@@ -242,7 +278,6 @@
             .section-title { font-size: 1.3rem; }
             .card-meaning { font-size: 0.95rem; }
 
-            /* [수정] Yes or No 항목 스타일 조정 */
             .yes-no-result { 
                 font-size: 1.1rem; 
                 padding: 1rem; 
@@ -258,9 +293,22 @@
 <div class="container" id="main-container">
     <div id="initial-screen">
         <h1>🔮 심층 타로 운세</h1>
-        <p id="initial-message">마음을 가다듬고 당신의 질문을 생각한 후,<br>아래 버튼을 눌러 카드를 펼치세요.</p>
-        <button id="draw-button" class="action-button" onclick="showCardSelection()">카드 펼치기</button>
-        <p class="footer-credit">Made by JH with help from Gemini<br>favorjh@gmail.com v1.7 / 250825</p>
+        <p id="initial-message">알고 싶은 운세의 주제를 선택하고<br>마음이 가장 이끌리는 카드를 선택하세요.</p>
+        <button id="draw-button" class="action-button" onclick="showTopicSelection()">타로 운세 보러가기</button>
+        <p class="footer-credit">Made by JH with help from Gemini<br>favorjh@gmail.com v1.8 / 250826</p>
+    </div>
+
+    <div id="topic-selection-container" style="display:none;">
+        <h1>주제 선택</h1>
+        <p>알고 싶은 운세 주제 하나를 선택하세요.</p>
+        <div class="topic-buttons-wrapper">
+            <button class="topic-button" onclick="selectTopic('loveMeaning', '❤️ 연애운')">❤️ 연애운</button>
+            <button class="topic-button" onclick="selectTopic('moneyMeaning', '💰 금전운')">💰 금전운</button>
+            <button class="topic-button" onclick="selectTopic('successMeaning', '🏆 성공운')">🏆 성공운</button>
+            <button class="topic-button" onclick="selectTopic('healthMeaning', '🩹 건강운')">🩹 건강운</button>
+            <button class="topic-button" onclick="selectTopic('studyMeaning', '📚 학업/시험운')">📚 학업/시험운</button>
+            <button class="topic-button" onclick="selectTopic('relationshipMeaning', '🤝 대인관계운')">🤝 대인관계운</button>
+        </div>
     </div>
 
     <div id="card-selection-container" style="display:none;">
@@ -277,7 +325,7 @@
     </div>
 
     <div id="result-area" style="display:none;">
-        </div>
+    </div>
 </div>
 
 <script>
@@ -289,8 +337,6 @@
         }
     });
     
-    // --- 운세 데이터 (생략) ---
-    // (이전 답변과 동일한 방대한 운세 데이터를 여기에 붙여넣으세요. 공간 절약을 위해 생략합니다.)
     const tarotCards = {
         '0. 🃏 바보<br>(The Fool)': {
             정방향: { 
@@ -779,9 +825,22 @@
         }
     };
     let selectedCardElement = null;
+    let selectedTopicInfo = { key: '', name: '' }; // [추가] 선택된 운세 주제 저장 변수
+
+    // [추가] 주제 선택 화면 표시 함수
+    function showTopicSelection() {
+        document.getElementById('initial-screen').style.display = 'none';
+        document.getElementById('topic-selection-container').style.display = 'block';
+    }
+
+    // [추가] 주제 선택 후 카드 선택 화면으로 넘어가는 함수
+    function selectTopic(topicKey, topicName) {
+        selectedTopicInfo = { key: topicKey, name: topicName };
+        document.getElementById('topic-selection-container').style.display = 'none';
+        showCardSelection();
+    }
 
     function showCardSelection() {
-        document.getElementById('initial-screen').style.display = 'none';
         document.getElementById('card-selection-container').style.display = 'block';
 
         const cardSelectionArea = document.getElementById('card-selection-area');
@@ -805,7 +864,6 @@
     }
 
     function shuffleCards() {
-        // 이전에 선택된 카드 해제
         if (selectedCardElement) {
             selectedCardElement.classList.remove('selected');
             selectedCardElement = null;
@@ -858,6 +916,7 @@
         }, 3000);
     }
     
+    // [수정] 결과 표시 함수
     function showTarotResult() {
         const resultArea = document.getElementById('result-area');
         
@@ -867,9 +926,10 @@
         
         const direction = Math.random() < 0.5 ? '정방향' : '역방향';
         
-        const { meaning, loveMeaning, moneyMeaning, successMeaning, healthMeaning, studyMeaning, relationshipMeaning, yesNo } = chosenCard[direction];
+        // [수정] 필요한 3가지 결과만 추출
+        const { meaning, yesNo } = chosenCard[direction];
+        const selectedTopicMeaning = chosenCard[direction][selectedTopicInfo.key];
 
-        // [수정] Yes or No 결과에 따라 이모지와 클래스 부여
         let yesNoClass = 'yes-no-maybe';
         let yesNoWithEmoji = yesNo;
         
@@ -883,30 +943,16 @@
              yesNoWithEmoji = '🤔 ' + yesNo;
         }
         
+        // [수정] 간소화된 결과 HTML 생성
         resultArea.innerHTML = `
             <div class="card-name">${chosenCardName}</div>
             <div class="card-direction">${direction}</div>
             
-            <div class="section-title">🔮 타로 총운</div>
+            <div class="section-title">🔮 카드 해석 </div>
             <div class="card-meaning">${meaning}</div>
 
-            <div class="section-title">❤️ 연애운</div>
-            <div class="card-meaning">${loveMeaning}</div>
-            
-            <div class="section-title">💰 금전운</div>
-            <div class="card-meaning">${moneyMeaning}</div>
-
-            <div class="section-title">🏆 성공운</div>
-            <div class="card-meaning">${successMeaning}</div>
-
-            <div class="section-title">🩹 건강운</div>
-            <div class="card-meaning">${healthMeaning}</div>
-
-            <div class="section-title">📚 학업/시험운</div>
-            <div class="card-meaning">${studyMeaning}</div>
-
-            <div class="section-title">🤝 대인관계운</div>
-            <div class="card-meaning">${relationshipMeaning}</div>
+            <div class="section-title">${selectedTopicInfo.name}</div>
+            <div class="card-meaning">${selectedTopicMeaning}</div>
             
             <div class="yes-no-result ${yesNoClass}">
                 <p><strong>[Yes or No]</strong>${yesNoWithEmoji}</p>
@@ -918,20 +964,26 @@
         `;
     }
 
+    // [수정] 초기화 함수
     function resetTarot() {
         const initialScreen = document.getElementById('initial-screen');
+        const topicSelectionContainer = document.getElementById('topic-selection-container');
         const cardSelectionContainer = document.getElementById('card-selection-container');
         const resultArea = document.getElementById('result-area');
         const confirmButton = document.getElementById('confirm-button');
         const mainContainer = document.getElementById('main-container');
         
         selectedCardElement = null;
+        selectedTopicInfo = { key: '', name: '' }; // 선택된 주제 초기화
 
         resultArea.style.display = 'none';
         cardSelectionContainer.style.display = 'none';
+        topicSelectionContainer.style.display = 'none'; // 주제 선택 화면도 숨김
         initialScreen.style.display = 'block';
 
-        confirmButton.style.display = 'none';
+        if(confirmButton) {
+            confirmButton.style.display = 'none';
+        }
         
         mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
